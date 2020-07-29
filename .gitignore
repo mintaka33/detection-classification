@@ -3,3 +3,4 @@ model
 out*
 *.jpg
 *.png
+tmp.log
