@@ -11,7 +11,7 @@ COLOR_RED = (0, 0, 255)
 COLOR_BLUE = (255, 0, 0)
 
 img_files = []
-imgdir = './dog'
+imgdir = 'F:/dog5'
 for file in glob.glob(imgdir + "/*.jpg"):
     img_files.append(file)
 for file in glob.glob(imgdir + "/*.png"):
@@ -27,7 +27,7 @@ model2 = './model/resnet-50.caffemodel'
 net2 = cv2.dnn.readNetFromCaffe(prototxt2, model2)
 
 input_imgfolder = False
-srcvideo = 'out.2640'
+srcvideo = 'out.265'
 cap = cv2.VideoCapture(srcvideo)
 if not cap.isOpened():
     print("ERROR: Cannot open VideoCapture")
@@ -81,9 +81,10 @@ while True:
             cv2.putText(frame2, result_txt, (startX, y+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_BLUE, 2)
 
             obj_count += 1
-
+    outimgfile = 'ref_' + str(frame_count).zfill(2) + '.png'
     frame_count += 1
-    cv2.imshow("Frame", frame2)
+    cv2.imshow("Frame", cv2.resize(frame2, (w2, h2), cv2.INTER_AREA))
+    cv2.imwrite(outimgfile, frame2)
 
     key = cv2.waitKey(0)
     if key == ord("q"):
