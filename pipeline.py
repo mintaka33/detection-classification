@@ -3,43 +3,49 @@ import cv2
 import time
 import glob
 
+CLASSES = [ "background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", 
+"cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep","sofa", "train", "tvmonitor"]
 
-CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
-    "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
-    "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
-    "sofa", "train", "tvmonitor"]
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 COLOR_RED = (0, 0, 255)
 COLOR_BLUE = (255, 0, 0)
 
 img_files = []
-imgdir = 'C:\\Users\\lli108\\Downloads\\tmp\\'
-for file in glob.glob(imgdir + "*.png"):
+imgdir = './dog'
+for file in glob.glob(imgdir + "/*.jpg"):
+    img_files.append(file)
+for file in glob.glob(imgdir + "/*.png"):
     img_files.append(file)
 
 threshold = 0.8
-prototxt = 'E:/Data/model/mobilenet-ssd/MobileNetSSD_deploy.prototxt.txt'
-model = 'E:/Data/model/mobilenet-ssd/MobileNetSSD_deploy.caffemodel'
+prototxt = './model/MobileNetSSD_deploy.prototxt.txt'
+model = './model/MobileNetSSD_deploy.caffemodel'
 net = cv2.dnn.readNetFromCaffe(prototxt, model)
 
-prototxt2 = 'E:/Data/model/resnet-50/resnet-50.prototxt'
-model2 = 'E:/Data/model/resnet-50/resnet-50.caffemodel'
+prototxt2 = './model/resnet-50.prototxt'
+model2 = './model/resnet-50.caffemodel'
 net2 = cv2.dnn.readNetFromCaffe(prototxt2, model2)
 
-#srcvideo = 'C:/Users/lli108/Downloads/207d.bmp'
-#cap = cv2.VideoCapture(srcvideo)
-#if not cap.isOpened():
-#    print("ERROR: Cannot open VideoCapture")
-#    exit()
+input_imgfolder = False
+srcvideo = 'out.2640'
+cap = cv2.VideoCapture(srcvideo)
+if not cap.isOpened():
+    print("ERROR: Cannot open VideoCapture")
+    input_imgfolder = True
 
 frame_count, obj_count = 0, 0
 
-#while True:
-#    ret, frame = cap.read()
-#    if ret == False:
-#        break;
-for imgfile in img_files:
-    frame = cv2.imread(imgfile)
+while True:
+    if input_imgfolder:
+        if frame_count >= len(img_files):
+            break
+        imgfile = img_files[frame_count]
+        frame = cv2.imread(imgfile)
+    else:
+        ret, frame = cap.read()
+        if ret == False:
+            break;
+
     (srch, srcw, _) = frame.shape
     scale = srcw/1000.0
     w2, h2 = (1000, int(srch/scale))
@@ -83,5 +89,5 @@ for imgfile in img_files:
     if key == ord("q"):
         break
 
-#cap.release()
+cap.release()
 cv2.destroyAllWindows()
