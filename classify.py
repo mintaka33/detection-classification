@@ -1,6 +1,9 @@
 import numpy as np
 import cv2
 import time
+import glob
+
+COLOR_RED = (0, 0, 255)
 
 labels = []
 with open('resnet-50-label.txt', 'rt') as f:
@@ -8,6 +11,12 @@ with open('resnet-50-label.txt', 'rt') as f:
         strip_line = line.split(':')[1].strip().strip("',")
         labels.append(strip_line)
 
+img_files = []
+imgdir = 'C:/Users/lli108/Downloads/tmp2'
+for file in glob.glob(imgdir + "/*.jpg"):
+    img_files.append(file)
+for file in glob.glob(imgdir + "/*.png"):
+    img_files.append(file)
 
 class ClassifyOut():
     def __init__(self, topv, topi):
@@ -19,27 +28,47 @@ class ClassifyOut():
         topstr = ''
         for i in range(len(self.topv)):
             strv = "{0:.4f}".format(self.topv[i])
-            topstr += strv + ' : ' + labels[topi[i]] + '\n'
+            topstr += strv + ': ' + str(topi[i]+1) + ': ' + labels[topi[i]] + '\n'
         out += topstr
         return out
 
-prototxt = 'E:/Data/model/resnet-50/resnet-50.prototxt'
-model = 'E:/Data/model/resnet-50/resnet-50.caffemodel'
-
+prototxt = './model/resnet-50.prototxt'
+model = './model/resnet-50.caffemodel'
 net = cv2.dnn.readNetFromCaffe(prototxt, model)
 
-src_img = cv2.imread('frame0_obj0.png')
-scale_img = cv2.resize(src_img, (224, 224))
-blob = cv2.dnn.blobFromImage(scale_img, 1.0, (224, 224), (104.0, 117.0, 123.0), False)
-net.setInput(blob)
-probs = net.forward()
+input_imgfolder = False
+cap = cv2.VideoCapture('./out.265')
+if not cap.isOpened():
+    print("Cannot open VideoCapture, will load images from specificed folder")
+    input_imgfolder = True
 
+frame_count = 0
+while True:
+    if input_imgfolder:
+        if frame_count >= len(img_files):
+            break
+        imgfile = img_files[frame_count]
+        frame = cv2.imread(imgfile)
+    else:
+        ret, frame = cap.read()
+        if ret == False:
+            break;
+    scale_img = cv2.resize(frame, (224, 224))
+    blob = cv2.dnn.blobFromImage(scale_img, 1.0, (224, 224), (104.0, 117.0, 123.0), False)
+    net.setInput(blob)
+    probs = net.forward()
+    topv = sorted(probs[0], reverse=True)[0:1]
+    topi = sorted(range(len(probs[0])), key=lambda k: probs[0][k], reverse=True)[0:1]
+    result = ClassifyOut(topv, topi)
+    if topv[0] > 0.9:
+        print(result.toString())
+    
+    cv2.putText(frame, result.toString(), (32, 32), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_RED)
+    cv2.imwrite('./ref/ref_%02d.png' % frame_count, frame)
 
-topv = sorted(probs[0], reverse=True)[0:5]
-topi = sorted(range(len(probs[0])), key=lambda k: probs[0][k], reverse=True)[0:5]
-
-result = ClassifyOut(topv, topi)
-
-print(result.toString())
+    frame_count += 1
+    key = cv2.waitKey(0)
+    if key == ord("q"):
+        break
 
 print('done')
