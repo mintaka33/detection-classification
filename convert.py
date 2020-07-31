@@ -5,10 +5,12 @@ import os
 dst_w, dst_h = 1920, 1088
 
 img_files = []
-imgdir = 'F:/dog5'
+imgdir = 'C:/Users/lli108/Downloads/tmp2/dog8'
 for file in glob.glob(imgdir + "/*.png"):
     img_files.append(file)
 for file in glob.glob(imgdir + "/*.jpg"):
+    img_files.append(file)
+for file in glob.glob(imgdir + "/*.bmp"):
     img_files.append(file)
 print(len(img_files), 'images found')
 
@@ -23,7 +25,7 @@ for i, file in enumerate(img_files):
     os.system(ffmpeg_cmdline)
     print(os.path.split(file)[1], 'converted')
 
-os.system('ffmpeg -y -i ./out/%04d.bmp -pix_fmt yuv420p -vcodec libx264 -preset veryslow out.264')
-os.system('ffmpeg -y -i ./out/%04d.bmp -pix_fmt yuv420p -vcodec libx265 -preset veryslow out.265')
+#os.system('ffmpeg -y -i ./out/%04d.bmp -pix_fmt yuv420p -vcodec libx264 -preset slow out.264')
+os.system('ffmpeg -y -i ./out/%04d.bmp -pix_fmt yuv420p -vcodec libx265 -preset slow out.265')
 
 print('done')
